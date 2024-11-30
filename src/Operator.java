@@ -64,6 +64,14 @@ public class Operator {
         return Arrays.copyOf(hash, 16);
     }
 
+    /**
+     *
+     * @param a
+     * @return
+     *
+     * https://stackoverflow.com/questions/9655181/java-convert-a-byte-array-to-a-hex-string
+     */
+
     protected String byteArrayToHex(byte[] a) {
         StringBuilder sb = new StringBuilder(a.length * 2);
         for(byte b: a)
