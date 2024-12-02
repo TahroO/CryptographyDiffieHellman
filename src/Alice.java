@@ -4,8 +4,6 @@ import java.io.*;
 import java.math.BigInteger;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class Alice extends Operator {
@@ -17,16 +15,9 @@ public class Alice extends Operator {
         BigInteger p = alice.getPrimeMod(); // Prime modulus
         BigInteger g = alice.getGBase();  // Base (generator)
 
-        // Alice chooses a random private key
-//        SecureRandom random = new SecureRandom();
-//        BigInteger a = new BigInteger(128, random).mod(p); // Private key
         BigInteger a = alice.generatePrivateKey(p, alice.getNumBits());
 
-
-//        BigInteger A = g.modPow(a, p);                              // Public key
-
         BigInteger A = alice.generatePublicKey(p, g, a);
-
 
         // Start server
 

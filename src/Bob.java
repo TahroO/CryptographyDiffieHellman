@@ -3,8 +3,6 @@ import javax.crypto.spec.SecretKeySpec;
 import java.io.*;
 import java.math.BigInteger;
 import java.net.Socket;
-import java.security.MessageDigest;
-import java.security.SecureRandom;
 import java.util.Arrays;
 
 public class Bob extends Operator {
@@ -13,24 +11,11 @@ public class Bob extends Operator {
         Bob bob = new Bob();
 
         // Diffie-Hellman parameters
-//        BigInteger p = new BigInteger("23"); // Prime modulus
-//        BigInteger g = new BigInteger("5");  // Base (generator)
-
-        // Diffie-Hellman parameters
         BigInteger p = bob.getPrimeMod(); // Prime modulus
         BigInteger g = bob.getGBase();  // Base (generator)
 
-//        // Bob chooses a random private key
-//        SecureRandom random = new SecureRandom();
-//        BigInteger b = new BigInteger(128, random).mod(p); // Private key
-//        BigInteger B = g.modPow(b, p);                    // Public key
-
+        // Generate PrivateKey
         BigInteger b = bob.generatePrivateKey(p, bob.getNumBits());
-
-
-
-
-//        BigInteger A = g.modPow(a, p);                              // Public key
 
         BigInteger B = bob.generatePublicKey(p, g, b);
 
