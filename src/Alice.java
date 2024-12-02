@@ -21,7 +21,7 @@ public class Alice extends Operator {
 
         // Start server
 
-        ServerSocket serverSocket = new ServerSocket(5000);
+        ServerSocket serverSocket = new ServerSocket(5005);
 
         System.out.println("Alice: Waiting for Bob...");
         Socket socket = serverSocket.accept();
@@ -38,11 +38,6 @@ public class Alice extends Operator {
         BigInteger B = new BigInteger(in.readUTF());
         System.out.println("Alice: Received public key B = " + B);
 
-        // Verify shared secret using DiscreteLogarithmSolver
-        // Todo this does not work!
-        DiscreteLogarithmSolver solver = new DiscreteLogarithmSolver();
-        BigInteger verifiedSecret = solver.solve(g, B, p).modPow(a, p);
-        System.out.println("Alice: Verified shared secret = " + verifiedSecret);
 
         // Compute shared secret
         BigInteger sharedSecret = B.modPow(a, p);
@@ -77,7 +72,7 @@ public class Alice extends Operator {
         System.out.println("Alice: Decrypted message from Bob: " + new String(decryptedBobMessage).trim());
 
 
-        // close connection
+        //close connection
         socket.close();
         serverSocket.close();
     }

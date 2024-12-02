@@ -21,7 +21,7 @@ public class Bob extends Operator {
 
         // Connect to Alice
         System.out.println("Bob: Connecting to Alice...");
-        Socket socket = new Socket("localhost", 5000);
+        Socket socket = new Socket("localhost", 5008);
         System.out.println("Bob: Connected to Alice.");
 
         DataInputStream in = new DataInputStream(socket.getInputStream());
