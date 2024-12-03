@@ -5,11 +5,17 @@ import java.util.Arrays;
 
 public class Operator {
 
-    // Diffie-Hellman parameters
     private final BigInteger primeMod = new BigInteger("23"); // Prime modulus
     private final BigInteger gBase = new BigInteger("5");  // Base (generator)
     private final int numBits = 2048;
 
+    /**
+     * Generate a private key using a secure random number for Diffie-Hellman key exchange
+     *
+     * @param p a prime number which participants agreed on for the modulo operation
+     * @param numBits the length range of bits for the generated BigInteger return value
+     * @return a computed private Key for Diffie-Hellman key exchange
+     */
 
     protected BigInteger generatePrivateKey(BigInteger p, int numBits){
 
@@ -26,11 +32,22 @@ public class Operator {
         return privateKey;
     }
 
+    /**
+     * Generate a public key for Diffie-Hellman key exchange
+     *
+     * @param p a prime number which participants agreed on for the modulo operation (should be the same which was used
+     *          for the private key generation
+     * @param g the base for the public key generation which participants agreed on
+     * @param privateKey a generated private key for Diffie-Hellman key exchange
+     * @return a computed public key for Diffie-Hellman key exchange
+     */
 
     protected BigInteger generatePublicKey(BigInteger p, BigInteger g, BigInteger privateKey) {
 
         return g.modPow(privateKey, p);
     }
+
+
 
     protected BigInteger getGBase() {
         return gBase;
@@ -47,14 +64,13 @@ public class Operator {
 
     /**
      * Hash the shared secret (e.g., using SHA-256) and use the first 16 bytes of the hash as the AES key.
-     * This approach avoids the need for manual padding and ensures a deterministic, consistent key.
-     * @param sharedSecret
-     * @return
+     *
+     * @param sharedSecret a BigInteger shared secret value from Diffie-Hellman Key Exchange
+     * @return an array with the defined length filled with the first values of the hash from the parameter
      * @throws Exception
      *
-     * https://www.tutorialspoint.com/java_cryptography/java_cryptography_message_digest.html
-     *
      */
+
     protected byte[] deriveAESKey(BigInteger sharedSecret) throws Exception {
         // Hash the shared secret to derive a consistent AES key
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
@@ -65,11 +81,11 @@ public class Operator {
     }
 
     /**
+     * Convert a provided byte[] into its hexadecimal format string representation
      *
-     * @param a
-     * @return
+     * @param a array of bytes representing a text
+     * @return the computed hexValue string representation of the given inputText
      *
-     * https://stackoverflow.com/questions/9655181/java-convert-a-byte-array-to-a-hex-string
      */
 
     protected String byteArrayToHex(byte[] a) {

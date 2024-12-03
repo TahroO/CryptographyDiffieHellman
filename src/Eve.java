@@ -1,8 +1,6 @@
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigInteger;
 import java.net.*;
 import java.util.Arrays;
@@ -25,6 +23,17 @@ public class Eve extends Operator{
         //ALICE
         ServerSocket aliceServerSocket = new ServerSocket(5008);
         Socket socket = aliceServerSocket.accept();
+
+
+        // approach to start a different Server Thread to handel multiple sockets
+        // see ClientHandler Class at the bottom here
+
+//        ClientHandler clientHandler = new ClientHandler(socket);
+//
+//        new Thread(clientHandler).start();
+
+
+
         DataInputStream aliceIn = new DataInputStream(socket.getInputStream());
         DataOutputStream aliceOut = new DataOutputStream(socket.getOutputStream());
 
@@ -64,7 +73,8 @@ public class Eve extends Operator{
         byte[] decryptedBobMessage = cipher.doFinal(bobCiphertext);
         System.out.println("Alice: Decrypted message from Bob: " + new String(decryptedBobMessage).trim());
 
-
+        socket.close();
+        aliceServerSocket.close();
 
 
         //BOB
@@ -82,6 +92,7 @@ public class Eve extends Operator{
 
         // Compute shared secret
         BigInteger sharedSecretBob = Anew.modPow(b, p);
+
         System.out.println("Bob: Shared secret = " + sharedSecretBob);
 
         // Encrypt a message for Alice
@@ -89,12 +100,14 @@ public class Eve extends Operator{
         byte[] aesKeyBob = eve.deriveAESKey(sharedSecretBob); // Ensure key is 16 bytes
         System.out.println("Bob: padded AES key = " + Arrays.toString(aesKeyBob));
         SecretKeySpec keySpecBob = new SecretKeySpec(aesKeyBob, "AES");
+
         Cipher cipherBob = Cipher.getInstance("AES/ECB/NoPadding");
 
         String bobMessage = "Decrypt me! Iam a ciphered mess.";
-        cipher.init(Cipher.ENCRYPT_MODE, keySpecBob);
+
+        cipherBob.init(Cipher.ENCRYPT_MODE, keySpecBob);
         byte[] plaintextBob = bobMessage.getBytes();
-        byte[] ciphertextBob = cipher.doFinal(plaintextBob);
+        byte[] ciphertextBob = cipherBob.doFinal(plaintextBob);
 
         // Send encrypted message to Alice
         bobOut.writeInt(ciphertextBob.length);
@@ -108,15 +121,72 @@ public class Eve extends Operator{
         bobIn.readFully(aliceCiphertext);
 
         // Decrypt Alice's message
-        cipher.init(Cipher.DECRYPT_MODE, keySpecBob);
+        cipherBob.init(Cipher.DECRYPT_MODE, keySpecBob);
         byte[] decryptedAliceMessage = cipherBob.doFinal(aliceCiphertext);
         System.out.println("Bob: Decrypted message from Alice: " + new String(decryptedAliceMessage).trim());
 
         // close connection
         bobSocket.close();
-        socket.close();
-        aliceServerSocket.close();
-
 
     }
+
+    // approach to handle different Sockets at a time
+//    // ClientHandler class
+//    private static class ClientHandler implements Runnable {
+//        private final Socket clientSocket;
+//
+//        // Constructor
+//        public ClientHandler(Socket socket)
+//        {
+//            this.clientSocket = socket;
+//        }
+//
+//        public void run()
+//        {
+//            PrintWriter out = null;
+//            BufferedReader in = null;
+//            try {
+//
+//                // get the outputstream of client
+//                out = new PrintWriter(
+//                        clientSocket.getOutputStream(), true);
+//
+//                // get the inputstream of client
+//                in = new BufferedReader(
+//                        new InputStreamReader(
+//                                clientSocket.getInputStream()));
+//
+//                String line;
+//                while ((line = in.readLine()) != null) {
+//
+//                    // writing the received message from
+//                    // client
+//                    System.out.printf(
+//                            " Sent from the client: %s\n",
+//                            line);
+//                    out.println(line);
+//                }
+//            }
+//            catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//            finally {
+//                try {
+//                    if (out != null) {
+//                        out.close();
+//                    }
+//                    if (in != null) {
+//                        in.close();
+//                        clientSocket.close();
+//                    }
+//                }
+//                catch (IOException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
 }
+
+
+

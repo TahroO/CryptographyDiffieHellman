@@ -35,11 +35,6 @@ public class Bob extends Operator {
         BigInteger A = new BigInteger(in.readUTF());
         System.out.println("Bob: Received public key A = " + A);
 
-        // Verify shared secret using DiscreteLogarithmSolver
-        //Todo this does not work!
-        DiscreteLogarithmSolver solver = new DiscreteLogarithmSolver();
-        BigInteger verifiedSecret = solver.solve(g, A, p).modPow(b, p);
-        System.out.println("Bob: Verified shared secret = " + verifiedSecret);
 
         // Compute shared secret
         BigInteger sharedSecret = A.modPow(b, p);
