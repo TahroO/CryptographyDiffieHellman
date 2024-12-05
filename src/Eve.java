@@ -19,33 +19,44 @@ public class Eve extends Operator{
         BigInteger a = eve.generatePrivateKey(p, eve.getNumBits());
         BigInteger A = eve.generatePublicKey(p, g, a);
 
+        BigInteger e = eve.generatePrivateKey(p, eve.getNumBits());
+        BigInteger E = eve.generatePublicKey(p, g, a);
 
-        //ALICE
+        //HANDSHAKE
         ServerSocket aliceServerSocket = new ServerSocket(5008);
+        System.out.println("Alice: Waiting for Bob...");
         Socket socket = aliceServerSocket.accept();
+        System.out.println("Alice: Connected to Bob.");
 
+        System.out.println("Bob: Connecting to Alice...");
+        Socket bobSocket = new Socket("localhost", 5005);
+        System.out.println("Bob: Connected to Alice.");
 
-        // approach to start a different Server Thread to handel multiple sockets
-        // see ClientHandler Class at the bottom here
-
-//        ClientHandler clientHandler = new ClientHandler(socket);
-//
-//        new Thread(clientHandler).start();
-
-
-
+        //INPUT OUTPUT
+        //What comes and goes to bob
         DataInputStream aliceIn = new DataInputStream(socket.getInputStream());
         DataOutputStream aliceOut = new DataOutputStream(socket.getOutputStream());
+        //What comes from and goes to alice
+        DataInputStream bobIn = new DataInputStream(bobSocket.getInputStream());
+        DataOutputStream bobOut = new DataOutputStream(bobSocket.getOutputStream());
+
 
         aliceOut.writeUTF(A.toString());
         System.out.println(A.toString());
         System.out.println("Alice: Sent public key A = " + A);
-
         BigInteger B = new BigInteger(aliceIn.readUTF());
+        bobOut.writeUTF(B.toString());
         System.out.println("Alice: Received public key B = " + B);
 
+        BigInteger Anew = new BigInteger(bobIn.readUTF());
+        System.out.println("Bob: Received public key A = " + Anew);
+
+        //SHARED SECRET
         BigInteger sharedSecret = B.modPow(a, p);
         System.out.println("Alice: Shared secret = " + sharedSecret);
+        BigInteger sharedSecretBob = Anew.modPow(b, p);
+        System.out.println("Bob: Shared secret = " + sharedSecretBob);
+
 
         byte[] aesKeyAlice = eve.deriveAESKey(sharedSecret); // Ensure key is 16 bytes
         System.out.println("Alice: padded AES key = " + Arrays.toString(aesKeyAlice));
@@ -73,27 +84,19 @@ public class Eve extends Operator{
         byte[] decryptedBobMessage = cipher.doFinal(bobCiphertext);
         System.out.println("Alice: Decrypted message from Bob: " + new String(decryptedBobMessage).trim());
 
-        socket.close();
-        aliceServerSocket.close();
+
 
 
         //BOB
-        Socket bobSocket = new Socket("localhost", 5005);
-        DataInputStream bobIn = new DataInputStream(bobSocket.getInputStream());
-        DataOutputStream bobOut = new DataOutputStream(bobSocket.getOutputStream());
-        bobOut.writeUTF(B.toString());
-        System.out.println(bobIn.readUTF());
-        System.out.println("Bob: Sent public key B = " + B);
 
-        BigInteger Anew = new BigInteger(bobIn.readUTF());
-        System.out.println("Bob: Received public key A = " + Anew);
+
+
+
 
         // Verify shared secret using DiscreteLogarithmSolver
 
         // Compute shared secret
-        BigInteger sharedSecretBob = Anew.modPow(b, p);
 
-        System.out.println("Bob: Shared secret = " + sharedSecretBob);
 
         // Encrypt a message for Alice
         // we need multiples of 16 bytes messages here as we are using 16 byte key
@@ -127,65 +130,9 @@ public class Eve extends Operator{
 
         // close connection
         bobSocket.close();
-
+        socket.close();
+        aliceServerSocket.close();
     }
-
-    // approach to handle different Sockets at a time
-//    // ClientHandler class
-//    private static class ClientHandler implements Runnable {
-//        private final Socket clientSocket;
-//
-//        // Constructor
-//        public ClientHandler(Socket socket)
-//        {
-//            this.clientSocket = socket;
-//        }
-//
-//        public void run()
-//        {
-//            PrintWriter out = null;
-//            BufferedReader in = null;
-//            try {
-//
-//                // get the outputstream of client
-//                out = new PrintWriter(
-//                        clientSocket.getOutputStream(), true);
-//
-//                // get the inputstream of client
-//                in = new BufferedReader(
-//                        new InputStreamReader(
-//                                clientSocket.getInputStream()));
-//
-//                String line;
-//                while ((line = in.readLine()) != null) {
-//
-//                    // writing the received message from
-//                    // client
-//                    System.out.printf(
-//                            " Sent from the client: %s\n",
-//                            line);
-//                    out.println(line);
-//                }
-//            }
-//            catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//            finally {
-//                try {
-//                    if (out != null) {
-//                        out.close();
-//                    }
-//                    if (in != null) {
-//                        in.close();
-//                        clientSocket.close();
-//                    }
-//                }
-//                catch (IOException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//    }
 }
 
 
